@@ -1,0 +1,16 @@
+{{if .products}}
+    <ul class="list-unstyled">
+        {{range .products}}
+        <li class="media">
+            <img class="d-flex mr-3" src="{{.ImageUrl}}" alt="Generic placeholder image">
+            <div class="media-body">
+                <h5 class="mt-0 mb-1">{{.Name}}</h5>
+                <div>{{.Description}}</div>
+                <div>{{.Price}} EUR</div>
+                <div><a href="{{.DetailsUrl}}">Details</a></div>
+                <div><a href="#">Buy</a></div>
+            </div>
+        </li>
+        {{end}}
+    </ul>
+{{end}}

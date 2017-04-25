@@ -1,0 +1,26 @@
+{{set . "title" "Home"}}
+{{template "header.html" .}}
+
+<header class="jumbotron" style="background-color:#A9F16C">
+</header>
+
+<div class="container">
+    <div class="row">
+        <div class="col-6">
+            {{template "flash.html" .}}
+        </div>
+    </div>
+
+    {{.ProductId}}
+
+    <img class="d-flex mr-3" src="{{.product.ImageUrl}}" alt="Generic placeholder image">
+    <div class="media-body">
+        <h5 class="mt-0 mb-1">{{.product.Name}}</h5>
+        <div>{{.product.Description}}</div>
+        <div>{{.product.Price}} EUR</div>
+        <div><a href="#">Buy</a></div>
+    </div>
+
+</div>
+
+{{template "footer.html" .}}
