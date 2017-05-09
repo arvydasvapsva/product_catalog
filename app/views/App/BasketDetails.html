@@ -1,0 +1,29 @@
+{{set . "title" "Home"}}
+{{template "header.html" .}}
+
+<header class="jumbotron" style="background-color:#A9F16C">
+</header>
+
+<div class="container">
+    <div class="row">
+        <div class="col-6">
+            {{template "flash.html" .}}
+        </div>
+    </div>
+
+    {{if .basketItems}}
+    <ul class="list-unstyled">
+        {{range .basketItems}}
+        <li class="media">
+            <div class="media-body">
+                <h5 class="mt-0 mb-1">{{.Name}}</h5>
+                <div>{{.Price}} EUR</div>
+            </div>
+        </li>
+        {{end}}
+    </ul>
+    {{end}}
+
+</div>
+
+{{template "footer.html" .}}

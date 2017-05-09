@@ -1,0 +1,13 @@
+<div class="dropdown">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Basket  - {{.basketItemsCount}} item(s)
+    </button>
+    {{if .basketItems}}
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        {{range .basketItems}}
+        <a class="dropdown-item" href="#">{{.Name}} {{.Price}} EUR</a>
+        {{end}}
+        <a class="dropdown-item" href="/basket-details">To Basket</a>
+    </div>
+    {{end}}
+</div>

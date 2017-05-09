@@ -9,6 +9,7 @@
     <link rel="shortcut icon" type="image/png" href="/public/img/favicon.png">
     <script src="/public/js/jquery-3.2.0.min.js"></script>
     <script src="/public/js/bootstrap-4.0.0.min.js"></script>
+    <script src="/public/js/basket.js"></script>
     {{range .moreStyles}}
       <link rel="stylesheet" type="text/css" href="/public/{{.}}">
     {{end}}
@@ -17,3 +18,5 @@
     {{end}}
   </head>
   <body>
+  <div class="basket" style="position:fixed"></div>
+

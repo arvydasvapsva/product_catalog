@@ -9,6 +9,9 @@ module:testrunner
 
 GET     /                                       App.Index
 GET     /details/:id                            App.Details
+GET     /buy/:id                                App.Buy
+GET     /basket                                 App.Basket
+GET     /basket-details                         App.BasketDetails
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
