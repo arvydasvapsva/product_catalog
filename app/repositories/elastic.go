@@ -44,6 +44,7 @@ func FindProducts() map[int] models.Product {
 	//termQuery := elastic.NewTermQuery("user", "olivere")
 	searchResult, err := client.Search().
 		Index("catalog").   // search in index "twitter"
+		Type("product").
 		//Query(termQuery).   // specify the query
 		//Sort("user", true). // sort by "user" field, ascending
 		//From(0).Size(10).   // take documents 0-9
@@ -99,9 +100,10 @@ func FindBasketItems(basketId string) map[int] models.BasketItem  {
 
 	// Search with a term query
 	searchResult, err := client.Search().
-		Index("basket").   // search in index "twitter"
-		Pretty(true).       // pretty print request and response JSON
-		Do(ctx)             // execute
+		Index("basket").
+		Type("basketItem").
+		Pretty(true).
+		Do(ctx)
 	if err != nil {
 		// Handle error
 		panic(err)
@@ -149,8 +151,9 @@ func StoreBasketItem(basketId string, product models.Product) models.BasketItem 
 	client.Index().
 		Index("basket").
 		Id(basketId + strconv.Itoa(product.ProductId)).
+		Type("basketItem").
 		BodyJson(basketItem).
-		//Refresh("true").
+		Refresh("true").
 		Do(ctx)
 
 	revel.INFO.Printf("Basket item \"%s\" was added", basketItem.Name)
