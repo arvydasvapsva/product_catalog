@@ -37,10 +37,10 @@ func (c App) Buy() revel.Result  {
 	var Id = c.Params.Get("id")
 	var ProductId, _ = strconv.Atoi(Id)
 	var product = repositories.FindProduct(ProductId)
-	var productWasAddedToBasket = basket.AddProduct(getBasketId(c), product)
+	var _, err = basket.AddProduct(getBasketId(c), product)
 
-	if !productWasAddedToBasket {
-		c.Flash.Error(fmt.Sprintf("Product \"%s\" was not added to the basket", product.Name))
+	if err != nil {
+		c.Flash.Error(err.Error())
 	} else {
 		c.Flash.Success(fmt.Sprintf("Product \"%s\" was added to the basket", product.Name))
 	}
