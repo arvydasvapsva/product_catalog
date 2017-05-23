@@ -111,7 +111,7 @@ func FindBasketItems(basketId string) map[int] models.BasketItem  {
 
 	// searchResult is of type SearchResult and returns hits, suggestions,
 	// and all kinds of other information from Elasticsearch.
-	revel.INFO.Printf("Query took %d milliseconds\n", searchResult.TookInMillis)
+	//revel.INFO.Printf("Query took %d milliseconds\n", searchResult.TookInMillis)
 
 	result := map[int] models.BasketItem{}
 
@@ -141,17 +141,18 @@ func FindBasketItems(basketId string) map[int] models.BasketItem  {
 	return result
 }
 
-func StoreBasketItem(basketId string, product models.Product) models.BasketItem  {
+func StoreBasketItem(basketId string, product models.Product, amount float32) models.BasketItem  {
 
 	ctx := context.Background()
 	var client = getClient(true)
 
 	// Add a document to the index
-	basketItem := models.BasketItem{product.ProductId, product.Name, product.Price}
+	basketItem := models.BasketItem{product.ProductId, product.Name, product.Price, amount}
 	client.Index().
 		Index("basket").
 		Id(basketId + strconv.Itoa(product.ProductId)).
 		Type("basketItem").
+		//Upsert(map[string]interface{}{"ProductId": product.ProductId, "Name": product.Name, "Price": product.Price, "Amount": amount}).
 		BodyJson(basketItem).
 		Refresh("true").
 		Do(ctx)
@@ -159,4 +160,30 @@ func StoreBasketItem(basketId string, product models.Product) models.BasketItem 
 	revel.INFO.Printf("Basket item \"%s\" was added", basketItem.Name)
 
 	return basketItem
+}
+
+func UpdateBasketItem(basketId string, updateProducts map[int]float32) {
+
+	ctx := context.Background()
+	var client = getClient(true)
+
+	bulkRequest := client.Bulk()
+	for ProductId, amount := range updateProducts {
+		if amount == 0 {
+			var request = elastic.NewBulkDeleteRequest().
+				Index("basket").
+				Type("basketItem").
+				Id(basketId + strconv.Itoa(ProductId))
+			bulkRequest = bulkRequest.Add(request)
+		} else {
+			var request = elastic.NewBulkUpdateRequest().
+				Index("basket").
+				Type("basketItem").
+				Id(basketId + strconv.Itoa(ProductId)).
+				Doc(map[string]interface{}{"Amount": amount})
+			bulkRequest = bulkRequest.Add(request)
+		}
+	}
+
+	bulkRequest.Refresh("true").Do(ctx)
 }

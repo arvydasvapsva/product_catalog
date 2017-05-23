@@ -12,16 +12,21 @@
     </div>
 
     {{if .basketItems}}
-    <ul class="list-unstyled">
-        {{range .basketItems}}
-        <li class="media">
-            <div class="media-body">
-                <h5 class="mt-0 mb-1">{{.Name}}</h5>
-                <div>{{.Price}} EUR</div>
-            </div>
-        </li>
-        {{end}}
-    </ul>
+        <form method="post" action="/basket/update" enctype="application/x-www-form-urlencoded">
+            <ul class="list-unstyled">
+                {{range .basketItems}}
+                <li class="media">
+                    <div class="media-body">
+                        <h5 class="mt-0 mb-1">{{.Name}}</h5>
+                        <div>{{.Price}} EUR</div>
+                        <input name="basket[amount][{{.ProductId}}]" type="text" value="{{.Amount}}">
+                        <button type="submit" name="remove" value="{{.ProductId}}">remove</button>
+                    </div>
+                </li>
+                {{end}}
+            </ul>
+            <button type="submit">Update</button>
+        </form>
     {{end}}
 
 </div>
