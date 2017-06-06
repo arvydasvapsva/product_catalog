@@ -9,16 +9,17 @@ import (
 	"strconv"
 )
 
-type Tweet struct {
-	User    string `json:"user"`
-	Message string `json:"message"`
+type Search struct {
+	Key string ""
+	From	int
+	Size	int
 }
 
 func getClient(traceLog bool) *elastic.Client  {
 	// Create a client
 
 	if traceLog {
-		client, err := elastic.NewClient(elastic.SetURL("http://localhost:9200"), elastic.SetBasicAuth("elastic", "changeme"), elastic.SetErrorLog(revel.INFO), elastic.SetSniff(false), elastic.SetTraceLog(revel.INFO))
+		client, err := elastic.NewClient(elastic.SetURL("http://localhost:9200"), elastic.SetBasicAuth("elastic", "changeme"), elastic.SetErrorLog(revel.INFO), elastic.SetSniff(false), elastic.SetTraceLog(revel.INFO), elastic.SetGzip(false))
 		if err != nil {
 			// Handle error
 			panic(err)
@@ -26,7 +27,7 @@ func getClient(traceLog bool) *elastic.Client  {
 
 		return client
 	} else {
-		client, err := elastic.NewClient(elastic.SetURL("http://localhost:9200"), elastic.SetBasicAuth("elastic", "changeme"), elastic.SetErrorLog(revel.INFO), elastic.SetSniff(false))
+		client, err := elastic.NewClient(elastic.SetURL("http://localhost:9200"), elastic.SetBasicAuth("elastic", "changeme"), elastic.SetErrorLog(revel.INFO), elastic.SetSniff(false), elastic.SetGzip(false))
 		if err != nil {
 			// Handle error
 			panic(err)
@@ -35,19 +36,27 @@ func getClient(traceLog bool) *elastic.Client  {
 	}
 }
 
-func FindProducts() map[int] models.Product {
+func buildQuery(search Search) elastic.Query {
+	if len(search.Key) == 0 {
+		return elastic.NewMatchAllQuery()
+	} else {
+		return elastic.NewQueryStringQuery(search.Key)
+	}
+}
+
+func FindProducts(search Search) map[int] models.Product {
 
 	ctx := context.Background()
 	var client = getClient(false)
 
 	// Search with a term query
-	//termQuery := elastic.NewTermQuery("user", "olivere")
 	searchResult, err := client.Search().
-		Index("catalog").   // search in index "twitter"
+		Index("catalog").
 		Type("product").
-		//Query(termQuery).   // specify the query
-		//Sort("user", true). // sort by "user" field, ascending
-		//From(0).Size(10).   // take documents 0-9
+		Query(buildQuery(search)).   // specify the query
+		//Sort("user", true).
+		//From(search.From).
+		//Size(search.Size).
 		Pretty(true).       // pretty print request and response JSON
 		Do(ctx)             // execute
 	if err != nil {
@@ -89,7 +98,7 @@ func FindProducts() map[int] models.Product {
 }
 
 func FindProduct(ProductId int) models.Product {
-	var all = FindProducts()
+	var all = FindProducts(Search{})
 	return all[ProductId]
 }
 
@@ -134,7 +143,7 @@ func FindBasketItems(basketId string) map[int] models.BasketItem  {
 		}
 	} else {
 		// No hits
-		revel.INFO.Print("Found no basket items\n")
+		revel.INFO.Print("No basket items found\n")
 	}
 
 
@@ -148,12 +157,13 @@ func StoreBasketItem(basketId string, product models.Product, amount float32) mo
 
 	// Add a document to the index
 	basketItem := models.BasketItem{product.ProductId, product.Name, product.Price, amount}
-	client.Index().
+
+	client.Update().
 		Index("basket").
 		Id(basketId + strconv.Itoa(product.ProductId)).
 		Type("basketItem").
-		//Upsert(map[string]interface{}{"ProductId": product.ProductId, "Name": product.Name, "Price": product.Price, "Amount": amount}).
-		BodyJson(basketItem).
+		Upsert(map[string]interface{}{"ProductId": product.ProductId, "Name": product.Name, "Price": product.Price, "Amount": amount}).
+		Script(elastic.NewScript("ctx._source.Amount += params.Amount").Lang("painless").Param("Amount", amount)).
 		Refresh("true").
 		Do(ctx)
 

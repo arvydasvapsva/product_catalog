@@ -14,7 +14,7 @@ type App struct {
 }
 
 func (c App) Index() revel.Result {
-	var products = repositories.FindProducts()
+	var products = repositories.FindProducts(repositories.Search{})
 	return c.Render(products)
 }
 
@@ -42,7 +42,7 @@ func (c App) Buy() revel.Result  {
 	if err != nil {
 		c.Flash.Error(err.Error())
 	} else {
-		c.Flash.Success(fmt.Sprintf("Product \"%s\" was added to the basket", product.Name))
+		c.Flash.Success(fmt.Sprintf("Product \"%s\" was added to the basket.", product.Name))
 	}
 
 	c.FlashParams()
@@ -85,6 +85,15 @@ func (c App) BasketUpdate() revel.Result {
 
 func (c App) BasketDetails() revel.Result {
 	var basketItems = repositories.FindBasketItems(getBasketId(c))
-
 	return c.Render(basketItems)
+}
+
+func (c App) Search() revel.Result {
+	searchKey := c.Params.Get("search")
+	var products = repositories.FindProducts(repositories.Search{"*" + searchKey + "*", 0, 10})
+
+	flash := make(map[string]string)
+	flash["success"] = fmt.Sprintf("%d items found.", len(products))
+
+	return c.Render(products, flash)
 }

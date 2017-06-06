@@ -1,16 +1,21 @@
 {{if .products}}
-    <ul class="list-unstyled">
+    <div class="card-deck">
         {{range .products}}
-        <li class="media">
-            <img class="d-flex mr-3" src="{{.ImageUrl}}" alt="Generic placeholder image">
-            <div class="media-body">
-                <h5 class="mt-0 mb-1">{{.Name}}</h5>
-                <div>{{.Description}}</div>
-                <div>{{.Price}} EUR</div>
-                <div><a href="{{.DetailsUrl}}">Details</a></div>
-                <div><a href="{{.BuyUrl}}">Buy</a></div>
+            <div class="card w-50">
+                <div class="card-header">
+                    <a href="{{.DetailsUrl}}"><img src="{{.ImageUrl}}" alt="{{.Name}}"></a>
+                </div>
+                <div class="card-block">
+                    <h4 class="card-title">{{.Name}}</h4>
+                    <h6 class="card-subtitle mb-2 text-muted">{{.Name}}</h6>
+                    <p class="card-text">{{.Description}}</p>
+                </div>
+                <div class="card-footer">
+                    <p class="card-text">{{.Price}} EUR</p>
+                    <a href="{{.DetailsUrl}}" class="card-link">Details</a>
+                    <a href="{{.BuyUrl}}" class="card-link">Buy</a>
+                </div>
             </div>
-        </li>
         {{end}}
-    </ul>
+    </div>
 {{end}}

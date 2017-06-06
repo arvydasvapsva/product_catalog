@@ -1,24 +1,37 @@
 {{set . "title" "Home"}}
 {{template "header.html" .}}
 
-<header class="jumbotron" style="background-color:#A9F16C">
-</header>
-
 <div class="container">
-    <div class="row">
-        <div class="col-6">
+    <div class="row head" style="padding-top: 1em">
+        <div class="col">
+            {{template "head.html" .}}
+        </div>
+    </div>
+    <div class="row flash">
+        <div class="col">
             {{template "flash.html" .}}
         </div>
     </div>
-
-    <img class="d-flex mr-3" src="{{.product.ImageUrl}}" alt="Generic placeholder image">
-    <div class="media-body">
-        <h5 class="mt-0 mb-1">{{.product.Name}}</h5>
-        <div>{{.product.Description}}</div>
-        <div>{{.product.Price}} EUR</div>
-        <div><a href="{{.product.BuyUrl}}">Buy</a></div>
+    <div class="row product-list" style="padding-top: 1em">
+        <div class="col">
+        <div class="card-deck">
+            <div class="card w-100">
+                <div class="card-header">
+                    <img src="{{.product.ImageUrl}}" alt="{{.product.Name}}">
+                </div>
+                <div class="card-block">
+                    <h4 class="card-title">{{.product.Name}}</h4>
+                    <h6 class="card-subtitle mb-2 text-muted">{{.product.Name}}</h6>
+                    <p class="card-text">{{.product.Description}}</p>
+                </div>
+                <div class="card-footer">
+                    <p class="card-text">{{.product.Price}} EUR</p>
+                    <a href="{{.product.BuyUrl}}" class="card-link">Buy</a>
+                </div>
+            </div>
+        </div>
+        </div>
     </div>
-
 </div>
 
 {{template "footer.html" .}}

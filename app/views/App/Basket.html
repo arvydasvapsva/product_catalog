@@ -1,13 +1,9 @@
-<div class="dropdown">
-    <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        Basket  - {{.basketItemsCount}} item(s)
-    </button>
-    {{if .basketItems}}
-    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        {{range .basketItems}}
-        <a class="dropdown-item" href="#">{{.Name}} {{.Amount}} x {{.Price}} EUR </a>
-        {{end}}
-        <a class="dropdown-item" href="/basket-details">To Basket</a>
-    </div>
+<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Basket  - {{.basketItemsCount}} item(s)</a>
+{{if .basketItems}}
+<div class="dropdown-menu">
+    {{range .basketItems}}
+    <a class="dropdown-item" href="#">{{.Name}} {{.Amount}} x {{.Price}} EUR </a>
     {{end}}
+    <a class="dropdown-item" href="/basket-details">To Basket</a>
 </div>
+{{end}}

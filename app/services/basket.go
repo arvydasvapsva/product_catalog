@@ -46,10 +46,10 @@ func UpdateProduct(basketId string, updateProducts map[int]float32) (message str
 	revel.INFO.Printf("Response from the backend:\n", resp.RawResponse)
 
 	if resp.Status() != "200 OK" {
-		return "", errors.New(fmt.Sprintf("Product \"%s\" was not updated", "aaa"))
+		return "", errors.New(fmt.Sprintf("Product \"%s\" was not updated.", "aaa"))
 	} else {
 		repositories.UpdateBasketItem(basketId, updateProducts)
 	}
 
-	return "Basket was successfully updated", nil
+	return "Basket was successfully updated.", nil
 }

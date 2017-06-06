@@ -12,6 +12,7 @@ GET     /details/:id                            App.Details
 GET     /buy/:id                                App.Buy
 GET     /basket                                 App.Basket
 POST    /basket/update                          App.BasketUpdate
+POST    /search                                 App.Search
 GET     /basket-details                         App.BasketDetails
 
 # Ignore favicon requests

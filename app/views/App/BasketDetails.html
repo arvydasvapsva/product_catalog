@@ -1,34 +1,41 @@
-{{set . "title" "Home"}}
+{{set . "title" "Basket"}}
 {{template "header.html" .}}
 
-<header class="jumbotron" style="background-color:#A9F16C">
-</header>
-
 <div class="container">
-    <div class="row">
-        <div class="col-6">
+    <div class="row head" style="padding-top: 1em">
+        <div class="col">
+            {{template "head.html" .}}
+        </div>
+    </div>
+    <div class="row flash">
+        <div class="col" style="padding-top: 1em">
             {{template "flash.html" .}}
         </div>
     </div>
-
-    {{if .basketItems}}
-        <form method="post" action="/basket/update" enctype="application/x-www-form-urlencoded">
-            <ul class="list-unstyled">
-                {{range .basketItems}}
-                <li class="media">
-                    <div class="media-body">
-                        <h5 class="mt-0 mb-1">{{.Name}}</h5>
-                        <div>{{.Price}} EUR</div>
-                        <input name="basket[amount][{{.ProductId}}]" type="text" value="{{.Amount}}">
-                        <button type="submit" name="remove" value="{{.ProductId}}">remove</button>
+    <div class="row product-list" style="padding-top: 1em">
+        <div class="col">
+            <form method="post" action="/basket/update" enctype="application/x-www-form-urlencoded">
+                <div class="card">
+                    <div class="card-block">
+                        <h4 class="card-title">Basket</h4>
+                        {{if .basketItems}}
+                            {{range .basketItems}}
+                                <h6 class="card-subtitle mb-2 text-muted">{{.Name}}</h6>
+                                <p class="card-text">
+                                    {{.Price}} EUR
+                                    <input name="basket[amount][{{.ProductId}}]" type="text" value="{{.Amount}}">
+                                    <button type="submit" name="remove" value="{{.ProductId}}">remove</button>
+                                </p>
+                            {{end}}
+                            <button  class="btn btn-primary" type="submit">Update</button>
+                        {{else}}
+                            <h6 class="card-subtitle mb-2 text-muted">Your basket is empty.</h6>
+                        {{end}}
                     </div>
-                </li>
-                {{end}}
-            </ul>
-            <button type="submit">Update</button>
-        </form>
-    {{end}}
-
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 {{template "footer.html" .}}
