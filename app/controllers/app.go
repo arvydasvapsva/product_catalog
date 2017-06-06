@@ -52,7 +52,10 @@ func (c App) Buy() revel.Result  {
 
 func (c App) Basket() revel.Result {
 	var basketItems = repositories.FindBasketItems(getBasketId(c))
-	var basketItemsCount = len(basketItems)
+	var basketItemsCount float32
+	for _, v := range basketItems {
+		basketItemsCount += v.Amount
+	}
 	return c.Render(basketItems, basketItemsCount)
 }
 

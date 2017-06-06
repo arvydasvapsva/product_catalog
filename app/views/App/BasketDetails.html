@@ -22,12 +22,13 @@
                             {{range .basketItems}}
                                 <h6 class="card-subtitle mb-2 text-muted">{{.Name}}</h6>
                                 <p class="card-text">
-                                    {{.Price}} EUR
+                                    {{.Price}} EUR x
                                     <input name="basket[amount][{{.ProductId}}]" type="text" value="{{.Amount}}">
-                                    <button type="submit" name="remove" value="{{.ProductId}}">remove</button>
+                                    <button class="btn btn-primary" type="submit">Update</button>
+                                    <button class="btn btn-primary" type="submit" name="remove" value="{{.ProductId}}">remove</button>
                                 </p>
                             {{end}}
-                            <button  class="btn btn-primary" type="submit">Update</button>
+
                         {{else}}
                             <h6 class="card-subtitle mb-2 text-muted">Your basket is empty.</h6>
                         {{end}}
