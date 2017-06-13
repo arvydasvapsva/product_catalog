@@ -11,17 +11,15 @@ type Product struct {
 }
 
 func NewProduct(ProductId int, Name string, Description string, Price float32) Product {
-	var DetailsUrl = "/details/" +  strconv.Itoa(ProductId)
-	var BuyUrl = "/buy/" +  strconv.Itoa(ProductId)
+	DetailsUrl := "/details/" +  strconv.Itoa(ProductId)
+	BuyUrl := "/buy/" +  strconv.Itoa(ProductId)
 	return Product{ProductId,Name,Description,Price,DetailsUrl,"", "", BuyUrl}
 }
 
-func (product Product) SetImageUrl(ImageUrl string) Product {
+func (product *Product) SetImageUrl(ImageUrl string) {
 	product.ImageUrl = ImageUrl
-	return product
 }
 
-func (product Product) SetDetailsImageUrl(DetailsImageUrl string) Product {
+func (product *Product) SetDetailsImageUrl(DetailsImageUrl string)  {
 	product.DetailsImageUrl = DetailsImageUrl
-	return product
 }

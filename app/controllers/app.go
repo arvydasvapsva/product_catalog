@@ -2,42 +2,63 @@ package controllers
 
 import (
 	"github.com/revel/revel"
-	"github.com/arvydasvapsva/product_catalog/app/repositories"
 	"strconv"
 	"github.com/arvydasvapsva/product_catalog/app/services"
 	"fmt"
 	"github.com/arvydasvapsva/product_catalog/app/routes"
+	"github.com/arvydasvapsva/product_catalog/app/repositories/catalog"
+	repositoriesBasket "github.com/arvydasvapsva/product_catalog/app/repositories/basket"
 )
+
+const REQUEST_PRODUCT_ID = "id"
+const REQUEST_PRODUCT_ACTION_REMOVE = "remove"
+const REQUEST_PRODUCT_ACTION_SEARCH = "search"
+const REQUEST_BASKET_FIELD_AMOUNT = "basket[amount]"
 
 type App struct {
 	*revel.Controller
 }
 
 func (c App) Index() revel.Result {
-	var products = repositories.FindProducts(repositories.Search{})
+	var products = getCatalog().FindProducts(services.CatalogSearch{})
 	return c.Render(products)
 }
 
 func (c App) Details() revel.Result {
-	var Id = c.Params.Get("id")
+	var Id = c.Params.Get(REQUEST_PRODUCT_ID)
 	var ProductId, _ = strconv.Atoi(Id)
-	var product = repositories.FindProduct(ProductId)
+	var product = getCatalog().FindProduct(ProductId)
 	return c.Render(product)
 }
 
 func getBasketId(c App) string  {
-	var sessionId = c.Session.ID()
+	return c.Session.ID()
+}
 
-	revel.INFO.Printf("SessionId %s", sessionId)
+// basket service builder
+func getBasketService() services.Basket {
+	remoteStorage := &repositoriesBasket.Remote{}
+	localStorage := &repositoriesBasket.ElasticBasket{remoteStorage}
 
-	return sessionId
+	return services.NewBasketService(localStorage)
+}
+
+// catalog repository builder
+func getCatalog() services.CatalogInterface {
+	return &catalog.Elastic{}
+
+    // you can pass a different data source!
+	//return &catalog.Memory{}
 }
 
 func (c App) Buy() revel.Result  {
-	var Id = c.Params.Get("id")
+	var Id = c.Params.Get(REQUEST_PRODUCT_ID)
 	var ProductId, _ = strconv.Atoi(Id)
-	var product = repositories.FindProduct(ProductId)
-	var _, err = basket.AddProduct(getBasketId(c), product, 1)
+	var product = getCatalog().FindProduct(ProductId)
+
+	basketService := getBasketService()
+
+	var _, err = basketService.AddProduct(getBasketId(c), product, 1)
 
 	if err != nil {
 		c.Flash.Error(err.Error())
@@ -51,7 +72,9 @@ func (c App) Buy() revel.Result  {
 }
 
 func (c App) Basket() revel.Result {
-	var basketItems = repositories.FindBasketItems(getBasketId(c))
+	basketService := getBasketService()
+
+	var basketItems = basketService.FindBasketItems(getBasketId(c))
 	var basketItemsCount float32
 	for _, v := range basketItems {
 		basketItemsCount += v.Amount
@@ -62,18 +85,18 @@ func (c App) Basket() revel.Result {
 func (c App) BasketUpdate() revel.Result {
 
 	var updateProducts = map[int]float32{}
-	var RemovableBasketItem = c.Params.Get("remove")
+	var RemovableBasketItem = c.Params.Get(REQUEST_PRODUCT_ACTION_REMOVE)
+
+	basketService := getBasketService()
 
 	if RemovableBasketItem != "" {
 		var ProductId, _ = strconv.Atoi(RemovableBasketItem)
 		updateProducts[ProductId] = 0
 	} else {
-		c.Params.Bind(&updateProducts, "basket[amount]")
+		c.Params.Bind(&updateProducts, REQUEST_BASKET_FIELD_AMOUNT)
 	}
 
-	revel.INFO.Print(updateProducts)
-
-	var message, err = basket.UpdateProduct(getBasketId(c), updateProducts)
+	var message, err = basketService.UpdateProduct(getBasketId(c), updateProducts)
 
 	if err != nil {
 		c.Flash.Error(err.Error())
@@ -87,13 +110,15 @@ func (c App) BasketUpdate() revel.Result {
 }
 
 func (c App) BasketDetails() revel.Result {
-	var basketItems = repositories.FindBasketItems(getBasketId(c))
+	basketService := getBasketService()
+
+	var basketItems = basketService.FindBasketItems(getBasketId(c))
 	return c.Render(basketItems)
 }
 
 func (c App) Search() revel.Result {
-	searchKey := c.Params.Get("search")
-	var products = repositories.FindProducts(repositories.Search{"*" + searchKey + "*", 0, 10})
+	searchKey := c.Params.Get(REQUEST_PRODUCT_ACTION_SEARCH)
+	var products = getCatalog().FindProducts(services.CatalogSearch{"*" + searchKey + "*", 0, 10})
 
 	flash := make(map[string]string)
 	flash["success"] = fmt.Sprintf("%d items found.", len(products))

@@ -1,55 +1,64 @@
-package basket
+package services
 
 import (
-	"gopkg.in/resty.v0"
 	"github.com/arvydasvapsva/product_catalog/app/models"
-	"github.com/revel/revel"
-	"github.com/arvydasvapsva/product_catalog/app/repositories"
 	"errors"
 	"fmt"
 )
 
-type remoteBasketItem struct {
-	ProductId	int
-	BasketId	string
-	Amount		float32
+type BasketStorageInterface interface {
+	AddProducts(map[int]BasketItem) (int, error)
+	UpdateProducts(map[int]BasketItem) (int, error)
+	GetParentStorage() BasketStorageInterface
+	FindBasketItems(basketId string) map[int] models.BasketItem
 }
 
-func AddProduct(basketId string, Product models.Product, amount float32) (ProductId int, err error) {
-	resp, _ := resty.R().
-		SetBody(remoteBasketItem{Product.ProductId, basketId, amount}).
-		Post("http://localhost:8888/add-to-basket")
+type Basket struct {
+	basketStorage BasketStorageInterface
+}
 
-	revel.INFO.Printf("Response from the backend:\n", resp.RawResponse)
+func NewBasketService(basketStorage BasketStorageInterface) Basket {
+	return Basket{basketStorage}
+}
 
-	if resp.Status() != "200 OK" {
+type BasketItem struct {
+	ProductId	int
+	Name string
+	Price float32
+	BasketId string
+	Amount float32
+}
+
+func (basket *Basket) getBasketStorage() BasketStorageInterface {
+	return basket.basketStorage
+}
+
+func (basket *Basket) AddProduct(basketId string, Product models.Product, amount float32) (int, error) {
+	basketItems := map[int]BasketItem{}
+	basketItems[Product.ProductId] = BasketItem{Product.ProductId, Product.Name, Product.Price, basketId, amount}
+
+	_, err := basket.getBasketStorage().AddProducts(basketItems)
+	if err != nil {
 		return 0, errors.New(fmt.Sprintf("Product \"%s\" was not added to the basket", Product.Name))
-	} else {
-		repositories.StoreBasketItem(basketId, Product, amount)
 	}
 
 	return Product.ProductId, nil
 }
 
-func UpdateProduct(basketId string, updateProducts map[int]float32) (message string, err error) {
-
-	var remoteBasketItems = map[int]remoteBasketItem{}
-
+func (basket *Basket) UpdateProduct(basketId string, updateProducts map[int]float32) (string, error) {
+	basketItems := map[int]BasketItem{}
 	for ProductId, amount := range updateProducts {
-		remoteBasketItems[ProductId] = remoteBasketItem{ProductId, basketId, amount}
+		basketItems[ProductId] = BasketItem{ProductId, "",0, basketId, amount}
 	}
 
-	resp, _ := resty.R().
-		SetBody(remoteBasketItems).
-		Post("http://localhost:8888/update-basket")
-
-	revel.INFO.Printf("Response from the backend:\n", resp.RawResponse)
-
-	if resp.Status() != "200 OK" {
-		return "", errors.New(fmt.Sprintf("Product \"%s\" was not updated.", "aaa"))
-	} else {
-		repositories.UpdateBasketItem(basketId, updateProducts)
+	_, err := basket.getBasketStorage().UpdateProducts(basketItems)
+	if err != nil {
+		return "", errors.New("Basker was not updated.")
 	}
 
 	return "Basket was successfully updated.", nil
+}
+
+func (basket *Basket) FindBasketItems(basketId string) map[int] models.BasketItem  {
+	return basket.getBasketStorage().FindBasketItems(basketId)
 }
